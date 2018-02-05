@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import LineChart from 'components/LineChart/LineChart'
 import BubbleChart from 'components/BubbleChart/BubbleChart'
 import UserCard from 'components/UserCard'
+import Background from 'components/Background'
 import './app.scss'
 import Api from 'services/Api'
 import { getLanguageColour } from 'services/helpers'
@@ -22,6 +23,8 @@ class App extends Component {
         publicGists: 0,
         publicRepos: 0
       },
+      apiExceeded: false,
+      isLoading: true,
       activity: [],
       repos: [],
       selectedRepo: '',
@@ -31,7 +34,7 @@ class App extends Component {
   }
 
   errorHandler = (e) => {
-    console.log(e)
+    this.setState({apiExceeded: true})
   }
 
   componentDidMount () {
@@ -86,7 +89,8 @@ class App extends Component {
           language: r.language,
           name: r.name,
           value: r.watchers
-        }))
+        })),
+        isLoading: false
       })
 
       return repos[0].name
@@ -116,7 +120,7 @@ class App extends Component {
   }
 
   getRepos = () => {
-    if (this.data.page) {
+    if (this.data.page && !this.state.apiExceeded) {
       this.api.request(`${this.data.user.repos_url}?per_page=90&page=${this.data.page}`)
         .then(this.saveReposData)
         .then(this.getRepoActivity)
@@ -146,6 +150,18 @@ class App extends Component {
 
     return (
       <div styleName='App'>
+        {this.state.isLoading &&
+          <Background
+            text='Loading'
+          />
+        }
+
+        {this.state.apiExceeded &&
+          <Background
+            text='Sorry, Github api rate limit exceeded for current IP'
+          />
+        }
+
         <div styleName='panel-left'>
           <UserCard
             avatar={user.avatar}
