@@ -1,0 +1,37 @@
+{
+  "name": "cc-evaluation-project",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "cc-react-scripts": "1.5.1",
+    "classnames": "2.2.5",
+    "lodash": "4.17.4",
+    "moment": "2.19.3",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-jss": "6.1.1",
+    "react-redux": "5.0.6",
+    "react-router-dom": "4.2.2",
+    "redux": "3.7.2",
+    "redux-multi": "0.1.91",
+    "redux-promise": "0.5.3",
+    "redux-thunk": "2.2.0"
+  },
+  "scripts": {
+    "start": "webpack-dashboard -c cyan -- react-scripts start",
+    "build": "react-scripts build",
+    "pretest": "npm run test:lint",
+    "test": "npm run test:unit",
+    "test:unit": "react-scripts test:unit",
+    "test:watch": "react-scripts test:watch",
+    "test:lint": "./node_modules/.bin/eslint . --color; exit 0",
+    "eject": "react-scripts eject",
+    "purge": "rm -rf node_moodules; npm i"
+  },
+  "devDependencies": {
+    "redux-devtools": "3.4.1",
+    "redux-devtools-dock-monitor": "1.1.2",
+    "redux-devtools-log-monitor": "1.4.0",
+    "redux-logger": "3.0.6"
+  }
+}
