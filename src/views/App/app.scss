@@ -8,10 +8,26 @@ body {
   text-align: center;
 }
 
-.centered-list {
-  width:250px;
-  margin:0 auto;
-  text-align:left;
-  line-height: 1.4;
-  padding-bottom: 20px;
+.panel-left {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 20%;
+  height: 100%;
+  border-right: 2px solid #eee;
+}
+
+.main {
+  margin-left: 20%;
+  margin-top: 40px;
+  display: inline-block;
+  width: 80%;
+}
+
+.title {
+  margin: 0px;
+}
+
+.bottom-graph {
+  margin-top: 50px;
 }

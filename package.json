@@ -5,6 +5,7 @@
   "dependencies": {
     "cc-react-scripts": "1.5.1",
     "classnames": "2.2.5",
+    "d3": "4.13.0",
     "lodash": "4.17.4",
     "moment": "2.19.3",
     "react": "^16.2.0",

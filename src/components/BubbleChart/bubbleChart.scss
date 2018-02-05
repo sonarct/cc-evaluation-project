@@ -1,0 +1,14 @@
+circle {
+  cursor: pointer;
+  overflow: hidden;
+}
+
+circle:hover {
+  stroke: #000;
+  stroke-width: 2px;
+}
+
+svg {
+  text-anchor: middle;
+  font-size: 10px;
+}
