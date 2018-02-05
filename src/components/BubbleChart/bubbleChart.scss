@@ -8,6 +8,10 @@ circle:hover {
   stroke-width: 2px;
 }
 
+text {
+  pointer-events: none;
+}
+
 svg {
   text-anchor: middle;
   font-size: 10px;

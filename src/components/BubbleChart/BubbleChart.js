@@ -57,7 +57,7 @@ class BubbleChart extends Component {
       .attr('xlink:href', (d) => '#' + d.data.id)
 
     node.append('text')
-      // .attr('clip-path', function (d) { return 'url(#clip-' + d.id + ')'; })
+      .attr('clip-path', (d) => 'url(#clip-' + d.data.id + ')')
       .selectAll('tspan')
       .data((d) => [d.data.name])
       .enter().append('tspan')

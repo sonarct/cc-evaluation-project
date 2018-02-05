@@ -36,16 +36,16 @@ class App extends Component {
 
   componentDidMount () {
     this.onWindowResize()
-
     window.addEventListener('resize', this.onWindowResize)
 
     this.api.request(`https://api.github.com/users/${this.login}`)
       .then(this.saveUserData)
       .then((reposUrl) => {
-        this.api.request(reposUrl)
+        this.api.request(`${reposUrl}?per_page=90`)
           .then(this.saveReposData)
           .then(this.getRepoActivity)
       })
+      .catch(error => console.log(error))
   }
 
   componentWillUnmount () {
@@ -55,7 +55,8 @@ class App extends Component {
   saveUserData = (user) => {
     this.data = {
       user: user,
-      repos: []
+      repos: [],
+      page: 1
     }
 
     this.setState({
@@ -75,21 +76,31 @@ class App extends Component {
 
   saveReposData = (repos) => {
     this.data.repos.push(...repos)
+    if (repos.length) {
+      ++this.data.page
 
-    this.setState({
-      repos: repos.map(r => ({
-        colour: getLanguageColour(r.language),
-        id: r.id,
-        language: r.language,
-        name: r.name,
-        value: r.watchers
-      }))
-    })
+      this.setState({
+        repos: this.data.repos.map(r => ({
+          colour: getLanguageColour(r.language),
+          id: r.id,
+          language: r.language,
+          name: r.name,
+          value: r.watchers
+        }))
+      })
 
-    return repos[0].name
+      return repos[0].name
+    } else {
+      this.data.page = 0
+      return null
+    }
   }
 
   getRepoActivity = (repo) => {
+    if (!repo) {
+      return
+    }
+
     this.api.request(`https://api.github.com/repos/${this.login}/${repo}/stats/participation`)
       .then((e) => {
         this.setState({
@@ -101,6 +112,15 @@ class App extends Component {
           }))
         })
       })
+      .catch(error => console.log(error))
+  }
+
+  getRepos = () => {
+    if (this.data.page) {
+      this.api.request(`${this.data.user.repos_url}?per_page=90&page=${this.data.page}`)
+        .then(this.saveReposData)
+        .then(this.getRepoActivity)
+    }
   }
 
   onWindowResize = () => {
@@ -136,16 +156,6 @@ class App extends Component {
             publicGists={user.publicGists}
             publicRepos={user.publicRepos}
           />
-        </div>
-        <div styleName='main'>
-          <h3 styleName='title'>
-            Repositories
-          </h3>
-          <BubbleChart
-            data={repos}
-            size={[ww * 0.8, wh / 1.4]}
-            onClick={this.onRepoClick}
-          />
 
           {selectedRepo &&
             <div styleName='bottom-graph'>
@@ -154,11 +164,27 @@ class App extends Component {
               </h3>
               <LineChart
                 data={activity}
-                size={[ww * 0.6, wh / 16]}
+                size={[ww * 0.26, wh * 0.0625]}
               />
             </div>
           }
         </div>
+
+        <div styleName='main'>
+          <h3 styleName='title'>
+            Repositories
+          </h3>
+          <BubbleChart
+            data={repos}
+            size={[ww * 0.73, wh * 0.9]}
+            onClick={this.onRepoClick}
+          />
+        </div>
+
+        <button onClick={this.getRepos}>
+          load more repos
+        </button>
+
       </div>
     )
   }
