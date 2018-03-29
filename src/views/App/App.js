@@ -1,11 +1,18 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
+
 import LineChart from 'components/LineChart/LineChart'
 import BubbleChart from 'components/BubbleChart/BubbleChart'
 import UserCard from 'components/UserCard'
 import Background from 'components/Background'
+
 import './app.scss'
+
 import Api from 'services/Api'
 import { getLanguageColour } from 'services/helpers'
+import {getUserData, getRepoActivity, getReposData} from 'middleware/thunks'
+
+const USER_LOGIN = 'tj'
 
 class App extends Component {
   constructor (props) {
@@ -15,19 +22,6 @@ class App extends Component {
     this.login = 'tj'
 
     this.state = {
-      user: {
-        avatar: '',
-        followers: 0,
-        login: '',
-        name: '',
-        publicGists: 0,
-        publicRepos: 0
-      },
-      apiExceeded: false,
-      isLoading: true,
-      activity: [],
-      repos: [],
-      selectedRepo: '',
       ww: 500,
       wh: 500
     }
@@ -41,90 +35,22 @@ class App extends Component {
     this.onWindowResize()
     window.addEventListener('resize', this.onWindowResize)
 
-    this.api.request(`https://api.github.com/users/${this.login}`)
-      .then(this.saveUserData)
-      .then((reposUrl) => {
-        this.api.request(`${reposUrl}?per_page=90`)
-          .then(this.saveReposData)
-          .then(this.getRepoActivity)
-      })
-      .catch(error => console.log(error))
+    this.props.getUserData(USER_LOGIN)
   }
 
   componentWillUnmount () {
     window.removeEventListener('resize', this.onWindowResize)
   }
 
-  saveUserData = (user) => {
-    this.data = {
-      user: user,
-      repos: [],
-      page: 1
-    }
-
-    this.setState({
-      user: {
-        avatar: user.avatar_url,
-        location: user.location,
-        login: user.login,
-        name: user.name,
-        followers: user.followers,
-        publicRepos: user.public_repos,
-        publicGists: user.public_gists
-      }
-    })
-
-    return user.repos_url
-  }
-
-  saveReposData = (repos) => {
-    this.data.repos.push(...repos)
-    if (repos.length) {
-      ++this.data.page
-
-      this.setState({
-        repos: this.data.repos.map(r => ({
-          colour: getLanguageColour(r.language),
-          id: r.id,
-          language: r.language,
-          name: r.name,
-          value: r.watchers
-        })),
-        isLoading: false
-      })
-
-      return repos[0].name
-    } else {
-      this.data.page = 0
-      return null
-    }
-  }
-
-  getRepoActivity = (repo) => {
-    if (!repo) {
+  getRepos = () => {
+    if (
+      // this.props.page && 
+      this.props.apiExceeded
+    ) {
       return
     }
 
-    this.api.request(`https://api.github.com/repos/${this.login}/${repo}/stats/participation`)
-      .then((e) => {
-        this.setState({
-          selectedRepo: repo,
-
-          activity: e.all.map((a, i) => ({
-            date: i,
-            value: a
-          }))
-        })
-      })
-      .catch(error => console.log(error))
-  }
-
-  getRepos = () => {
-    if (this.data.page && !this.state.apiExceeded) {
-      this.api.request(`${this.data.user.repos_url}?per_page=90&page=${this.data.page}`)
-        .then(this.saveReposData)
-        .then(this.getRepoActivity)
-    }
+    this.props.getReposData()
   }
 
   onWindowResize = () => {
@@ -134,19 +60,42 @@ class App extends Component {
     })
   }
 
-  onRepoClick = (name) => {
-    this.getRepoActivity(name)
+  onRepoClick = (repo) => {
+    if (!repo) {
+      return
+    }
+
+    this.props.getRepoActivity(repo)
   }
 
   render () {
+    console.log('--- this.props', this.props)
+
+    const {
+      ww,
+      wh
+    } = this.state
+
     const {
       activity,
       repos,
       selectedRepo,
       user,
-      ww,
-      wh
-    } = this.state
+      apiExceeded
+    } = this.props
+
+    const _repos = repos.map(r => ({
+      colour: getLanguageColour(r.language),
+      id: r.id,
+      language: r.language,
+      name: r.name,
+      value: r.watchers
+    }))
+
+    const _activity = activity.all && activity.all.map((a, i) => ({
+      date: i,
+      value: a
+    }))
 
     return (
       <div styleName='App'>
@@ -179,7 +128,7 @@ class App extends Component {
                 {selectedRepo} - past year of activity
               </h3>
               <LineChart
-                data={activity}
+                data={_activity}
                 size={[ww * 0.26, wh * 0.0625]}
               />
             </div>
@@ -191,7 +140,7 @@ class App extends Component {
             Repositories
           </h3>
           <BubbleChart
-            data={repos}
+            data={_repos}
             size={[ww * 0.73, wh * 0.9]}
             onClick={this.onRepoClick}
           />
@@ -206,4 +155,19 @@ class App extends Component {
   }
 }
 
-export default App
+const mapStateToProps = (state) => ({
+  activity: state.app.activity,
+  apiExceeded: state.app.apiExceeded,
+  user: state.app.user,
+  repos: state.app.repos,
+  selectedRepo: state.app.selectedRepo,
+  isLoading: state.app.isLoading
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  getUserData: user => dispatch(getUserData(user)),
+  getReposData: () => dispatch(getReposData()),
+  getRepoActivity: repo => dispatch(getRepoActivity(repo))
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
