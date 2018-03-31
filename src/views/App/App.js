@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
 import LineChart from 'components/LineChart/LineChart'
@@ -10,7 +11,7 @@ import './app.scss'
 
 import Api from 'services/Api'
 import { getLanguageColour } from 'services/helpers'
-import {getUserData, getRepoActivity, getReposData} from 'middleware/thunks'
+import {getUser, getRepoActivity, getRepos} from 'middleware/thunks'
 
 const USER_LOGIN = 'tj'
 
@@ -27,6 +28,18 @@ class App extends Component {
     }
   }
 
+  static propTypes = {
+    getUser: PropTypes.func,
+    getRepoActivity: PropTypes.func,
+    getRepos: PropTypes.func,
+    activity: PropTypes.arrayOf(PropTypes.shape({})),
+    repos: PropTypes.arrayOf(PropTypes.shape({})),
+    selectedRepo: PropTypes.string,
+    user: PropTypes.shape({}),
+    apiExceeded: PropTypes.bool,
+    isLoading: PropTypes.bool
+  }
+
   errorHandler = (e) => {
     this.setState({apiExceeded: true})
   }
@@ -35,7 +48,7 @@ class App extends Component {
     this.onWindowResize()
     window.addEventListener('resize', this.onWindowResize)
 
-    this.props.getUserData(USER_LOGIN)
+    this.props.getUser(USER_LOGIN)
   }
 
   componentWillUnmount () {
@@ -50,7 +63,7 @@ class App extends Component {
       return
     }
 
-    this.props.getReposData()
+    this.props.getRepos()
   }
 
   onWindowResize = () => {
@@ -81,7 +94,8 @@ class App extends Component {
       repos,
       selectedRepo,
       user,
-      apiExceeded
+      apiExceeded,
+      isLoading
     } = this.props
 
     const _repos = repos.map(r => ({
@@ -99,13 +113,13 @@ class App extends Component {
 
     return (
       <div styleName='App'>
-        {this.state.isLoading &&
+        {isLoading &&
           <Background
             text='Loading'
           />
         }
 
-        {this.state.apiExceeded &&
+        {apiExceeded &&
           <Background
             text='Sorry, Github api rate limit exceeded for current IP'
           />
@@ -113,16 +127,10 @@ class App extends Component {
 
         <div styleName='panel-left'>
           <UserCard
-            avatar={user.avatar}
-            followers={user.followers}
-            login={user.login}
-            location={user.location}
-            name={user.name}
-            publicGists={user.publicGists}
-            publicRepos={user.publicRepos}
+            {...user}
           />
 
-          {selectedRepo &&
+          {_activity &&
             <div styleName='bottom-graph'>
               <h3 styleName='title'>
                 {selectedRepo} - past year of activity
@@ -159,14 +167,15 @@ const mapStateToProps = (state) => ({
   activity: state.app.activity,
   apiExceeded: state.app.apiExceeded,
   user: state.app.user,
+  page: state.app.page,
   repos: state.app.repos,
   selectedRepo: state.app.selectedRepo,
   isLoading: state.app.isLoading
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  getUserData: user => dispatch(getUserData(user)),
-  getReposData: () => dispatch(getReposData()),
+  getUser: user => dispatch(getUser(user)),
+  getRepos: () => dispatch(getRepos()),
   getRepoActivity: repo => dispatch(getRepoActivity(repo))
 })
 

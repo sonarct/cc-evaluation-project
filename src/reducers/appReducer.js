@@ -1,5 +1,10 @@
 import { GET_USER_DATA_SUCCESS } from 'constants/actionTypes'
-import { GET_REPOS_DATA_SUCCESS, DATA_IS_LOADING, GET_REPO_ACTIVITY_SUCCESS } from '../constants/actionTypes'
+import {
+  GET_REPOS_DATA_SUCCESS,
+  DATA_IS_LOADING,
+  GET_REPO_ACTIVITY_SUCCESS,
+  SELECT_REPO
+} from '../constants/actionTypes'
 
 const initialState = {
   user: {
@@ -50,6 +55,11 @@ export default function app (state = initialState, action) {
       return {
         ...state,
         activity: action.activity
+      }
+    case SELECT_REPO:
+      return {
+        ...state,
+        selectedRepo: action.repo
       }
     default:
       return state

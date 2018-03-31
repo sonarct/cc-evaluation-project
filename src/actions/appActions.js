@@ -3,7 +3,8 @@ import {
   FETCHING_DATA_FAILURE,
   GET_REPOS_DATA_SUCCESS,
   GET_USER_DATA_SUCCESS,
-  GET_REPO_ACTIVITY_SUCCESS
+  GET_REPO_ACTIVITY_SUCCESS,
+  SELECT_REPO
 } from 'constants/actionTypes'
 
 export const saveUserData = (userData) => ({
@@ -29,4 +30,9 @@ export const saveReposData = (repos) => ({
 export const saveRepoActivityData = (activity) => ({
   type: GET_REPO_ACTIVITY_SUCCESS,
   activity
+})
+
+export const selectRepo = (repo) => ({
+  type: SELECT_REPO,
+  repo
 })
